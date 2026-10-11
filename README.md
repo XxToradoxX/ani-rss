@@ -1,3 +1,41 @@
+## ⚠️ 这是个人自用的 fork
+
+本仓库 fork 自 [wushuo894/ani-rss](https://github.com/wushuo894/ani-rss)，**仅供本人自用**。
+
+> **请不要向原作者提交本仓库的任何问题或 PR。**
+> 本仓库的改动与原作者无关，遇到问题请只在本仓库的 Issue 提出，或自行解决。
+> 原作者已明确表示[不接受"纯 AI 生成"的 Pull Request](https://github.com/wushuo894/ani-rss/discussions/685)。
+
+### 与原版的区别
+
+本仓库只做了一处功能改动：**新增微信推送（WxPusher）通知**。
+
+这个功能是**"用 AI 许愿"**加上的 —— 我向 AI 描述了需求，由 AI 写出实现代码，我负责验证与调试。
+
+| 项目 | 说明 |
+|---|---|
+| 新增通知类型 | `WxPusher微信推送` |
+| 推送方式 | 标准推送（appToken + UID / 主题群发）或 极简推送（SPT） |
+| 触发时机 | 与原有通知状态一致：开始下载、下载完成、缺集、错误、订阅完结、摸鱼检测 |
+| 配置位置 | 设置 → 通知 → 添加通知 |
+
+顺带修复的两处：
+
+- 测试通知不再因 TMDB / BGM 不可用而中断（原先网络受限时"测试"按钮必然失败）
+- WxPusher 接收列表为空时不再发送空数组
+
+### Windows 便携版
+
+本仓库的 Release 提供自带 Java 运行时的 Windows 便携版（`ani-rss-portable.zip`），解压后双击 `ani-rss.exe` 即可，目标机器无需安装 Java。
+
+程序内的"检测更新"只读取**本仓库**的 Release，不会去动原作者的仓库。
+
+### 参与开发
+
+如果你要基于原版开发，请前往 [原作者仓库](https://github.com/wushuo894/ani-rss) 与 [官方文档](https://docs.wushuo.top/dev/basic)。
+
+---
+
 <div align="center">
 <img alt="icon-512.png" height="80" src="ani-rss-ui/public/icon-512.png"/>
 <h1 align="center" style="margin-top: 0">ANI-RSS</h1>
@@ -79,7 +117,7 @@ qBittorrent、Transmission、Aria2 等)推送任务指令。工具本身不具�
 - 技术中立性：开发者仅维护工具的功能实现，不参与种子文件的内容控制、编辑或优化，亦无法保证链接有效性、完整性与获取速率
 - 免责范围
     - 用户因使用第三方种子导致的设备损害、数据丢失或法律纠纷
-    - 因网络政策、技术更新或源站限制造成的服务中断或功能失效
+    - 因网络政策、技术更新、源站限制造成的服务中断或功能失效
 - 例外追责
     - 若监管机构认定本工具违背技术中立原则，开发者保留终止服务的权利
 
@@ -109,5 +147,3 @@ SharonNetworks 为您的业务起飞保驾护航！
 [NodeSupport](https://github.com/NodeSeekDev/NodeSupport) 赞助了本项目
 
 [![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
-
-
