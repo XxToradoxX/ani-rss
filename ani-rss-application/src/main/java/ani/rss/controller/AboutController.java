@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -58,8 +59,13 @@ public class AboutController extends BaseController {
     @Auth
     @Operation(summary = "更新")
     @PostMapping("/update")
-    public Result<Void> update(@RequestBody About about) {
+    public Result<Void> update(@RequestBody(required = false) About about) {
         try {
+            // 兼容旧前端: 未携带请求体时自行检测一次
+            if (Objects.isNull(about) || !Boolean.TRUE.equals(about.getUpdate())) {
+                about = updateService.about();
+            }
+
             updateService.update(about);
             return Result.success("已开始更新, 请勿关闭程序");
         } catch (Exception e) {
