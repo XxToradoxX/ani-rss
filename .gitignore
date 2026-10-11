@@ -47,6 +47,15 @@ logs
 /config
 .git
 
+# 运行时配置（v2），程序会在 exe 同级建 config 目录，任意层级都不应被提交
+# 注意: 不要写成 **/config/ ，源码里的 ani/rss/config 包会被误伤
+config.v2.json
+ani.v2.json
+/config/
+backup/
+rollback.ps1
+jre.old/
+
 *.log
 ani-rss-update.exe
 *.versionsBackup
