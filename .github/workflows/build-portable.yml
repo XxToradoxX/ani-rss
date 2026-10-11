@@ -1,21 +1,25 @@
 name: build-portable
 
-# 打包 Windows 便携版(含精简运行时) 并发布到本仓库的 Release
+# Build the self-contained Windows portable package and publish it to THIS repo's Release.
 #
-# 触发方式:
-#   1. 手动: Actions -> build-portable -> Run workflow, 填入 tag(如 v3.2.46)
-#   2. 打 tag: git tag v3.2.46 && git push origin v3.2.46
+# Triggers:
+#   1. manual: Actions -> build-portable -> Run workflow, supply a tag (e.g. v3.2.46)
+#   2. tag push: git tag v3.2.46 && git push origin v3.2.46
 #
-# 程序内的"检测更新"会读取本仓库的 releases/latest, 并按运行形态匹配资产:
-#   ani-rss.jar            <- 以 jar 方式运行
-#   ani-rss.exe            <- 直接运行 exe
-#   ani-rss-portable.zip   <- exe 同级存在 jre 目录(便携版)
+# The in-app "check for update" reads this repo's releases/latest and picks the
+# asset that matches how the program is running:
+#   ani-rss.jar            <- running as a jar
+#   ani-rss.exe            <- running as a plain exe
+#   ani-rss-portable.zip   <- a "jre" directory sits next to the exe (portable)
+#
+# NOTE: keep this file ASCII-only. Non-ASCII text in a file without a BOM is
+#       misread as ANSI on Windows runners.
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: '发布 tag (如 v3.2.46)'
+        description: 'release tag (e.g. v3.2.46)'
         required: true
   push:
     tags:
@@ -38,7 +42,7 @@ jobs:
           cache: maven
 
       - name: Put Git Bash on PATH
-        # windows profile 里的 generate-resources.sh 需要 bash 下载 ani-rss-update.exe
+        # the windows maven profile runs generate-resources.sh, which needs bash and curl
         run: echo "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Build portable package
@@ -49,15 +53,18 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          [xml]$pom = Get-Content ./pom.xml
-          $v = $pom.project.version
-          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          Write-Host "version = $v"
+          $pomText = Get-Content ./pom.xml -Raw -Encoding UTF8
+          if ($pomText -match '<version>([^<]+)</version>') {
+            "version=$($Matches[1])" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Host "version = $($Matches[1])"
+          } else {
+            throw 'cannot read project version from pom.xml'
+          }
 
       - name: Zip portable package
         shell: pwsh
         run: |
-          # 直接压缩目录内容, 解压后即为 exe + jar + jre 三件套, 不含多余的中间目录
+          # zip the contents, so extracting yields ani-rss.exe + ani-rss.jar + jre\ directly
           Compress-Archive -Path ./ani-rss-application/target/ani-rss-win/* `
                            -DestinationPath ./ani-rss-portable.zip `
                            -CompressionLevel Optimal

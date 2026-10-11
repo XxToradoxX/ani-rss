@@ -69,7 +69,10 @@ public class PortableUpdate implements BaseUpdate {
         Assert.notNull(appDir, "无法获取程序目录");
 
         File script = new File(FileUtil.getTmpDir(), "ani-rss-portable-update.ps1");
-        writeUtf8Bom(script, buildScript(appDir, updateFile));
+        // 用自身 pid 作为等待目标: Spring Boot 的 exe 会把 jar 解到临时目录再起 JVM,
+        // 无法靠进程路径判断"程序是否已退出", 而 pid 是可靠的
+        long pid = ProcessHandle.current().pid();
+        writeUtf8Bom(script, buildScript(appDir, updateFile, pid));
 
         // 最小化启动, 脚本自身会等待本进程退出后再替换文件
         String command = "cmd.exe /c start \"\" /min powershell.exe -NoProfile -ExecutionPolicy Bypass -File \""
@@ -91,8 +94,12 @@ public class PortableUpdate implements BaseUpdate {
      * 生成更新脚本
      * <p>
      * 必须写成 UTF-8 BOM, 否则 Windows PowerShell 5.1 会按 ANSI 解析中文注释而报语法错误
+     *
+     * @param appDir 程序目录
+     * @param zip    已下载的便携包
+     * @param pid    当前进程 pid, 脚本必须等它退出后才能替换文件
      */
-    private String buildScript(File appDir, File zip) {
+    private String buildScript(File appDir, File zip, long pid) {
         String dir = appDir.getAbsolutePath();
         String zipPath = zip.getAbsolutePath();
 
@@ -101,11 +108,9 @@ public class PortableUpdate implements BaseUpdate {
                 "$log = Join-Path $env:TEMP 'ani-rss-portable-update.log'",
                 "function Write-Log($m) { \"$(Get-Date -Format 'HH:mm:ss') $m\" | Out-File -FilePath $log -Append -Encoding utf8 }",
                 "try {",
-                "    Write-Log 'wait for ani-rss to exit'",
-                "    for ($i = 0; $i -lt 120; $i++) {",
-                "        $p = Get-Process -Name 'ani-rss','javaw' -ErrorAction SilentlyContinue |",
-                "             Where-Object { $_.Path -and $_.Path -like '__DIR__*' }",
-                "        if (-not $p) { break }",
+                "    Write-Log 'wait for pid __PID__ to exit'",
+                "    for ($i = 0; $i -lt 240; $i++) {",
+                "        if (-not (Get-Process -Id __PID__ -ErrorAction SilentlyContinue)) { break }",
                 "        Start-Sleep -Milliseconds 500",
                 "    }",
                 "    Start-Sleep -Seconds 2",
@@ -154,7 +159,8 @@ public class PortableUpdate implements BaseUpdate {
 
         return template
                 .replace("__ZIP__", zipPath)
-                .replace("__DIR__", dir);
+                .replace("__DIR__", dir)
+                .replace("__PID__", String.valueOf(pid));
     }
 
     /**
