@@ -30,6 +30,11 @@ public class ConfigUtil {
 
     /**
      * 获取设置文件夹
+     * <p>
+     * 优先级: 环境变量 CONFIG &gt; Windows/macOS 用户目录/ani-rss &gt; 工作目录下的 config (Linux/Docker)
+     * <p>
+     * 不再支持"程序目录下放一个 config 文件夹即使用便携模式", 配置固定落在用户目录,
+     * 这样程序目录可以整体替换(升级/更新)而不影响配置。
      *
      * @return 文件夹
      */
@@ -39,19 +44,14 @@ public class ConfigUtil {
             return new File(configDir);
         }
 
-        // 若当前目录存在 config 则优先使用
-        File file = new File("config").getAbsoluteFile();
-        if (file.exists()) {
-            return file;
-        }
-
-        // macOS / Windows 默认为 用户目录/ani-rss
         OsInfo osInfo = SystemUtil.getOsInfo();
         if (osInfo.isWindows() || osInfo.isMac()) {
-            file = new File(FileUtil.getUserHomePath(), "ani-rss");
+            // Windows / macOS 默认为 用户目录/ani-rss
+            return new File(FileUtil.getUserHomePath(), "ani-rss");
         }
 
-        return file;
+        // Linux 等系统保持原行为: 工作目录下的 config (Docker 通常挂载到这里)
+        return new File("config").getAbsoluteFile();
     }
 
     /**
