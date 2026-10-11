@@ -264,6 +264,14 @@
                                         <windowTitle>ani-rss (${project.version})</windowTitle>
                                     </singleInstance>
                                     <jre>
+                                        <!--
+                                            自带 Java: exe 同级 jre 目录放置由 jlink 生成的自定义运行时。
+                                            bundledJre64Bit 是 launch4j 3.50 中指定该目录的唯一方式(插件会提示
+                                            deprecated, 但并无等价替代), 缺失时回退到系统 JAVA_HOME / PATH。
+                                            生成方式见项目根目录 build-windows-portable.ps1
+                                        -->
+                                        <bundledJre64Bit>jre</bundledJre64Bit>
+                                        <requires64Bit>true</requires64Bit>
                                         <path>%JAVA_HOME%/bin;%PATH%</path>
                                         <minVersion>${java.version}</minVersion>
                                         <opts>
