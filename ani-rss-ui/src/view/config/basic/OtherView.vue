@@ -19,6 +19,20 @@
       </div>
     </div>
   </SettingsItem>
+  <SettingsItem label="更新仓库">
+    <div class="full-width">
+      <div class="flex">
+        <el-input v-model="props.config['updateOwner']" placeholder="XxToradoxX" class="width-150"/>
+        <el-text class="mx-1">/</el-text>
+        <el-input v-model="props.config['updateRepo']" placeholder="ani-rss" class="width-150"/>
+      </div>
+      <div>
+        <el-text class="mx-1" size="small">
+          检测更新时读取该仓库的 releases，默认指向本项目 fork
+        </el-text>
+      </div>
+    </div>
+  </SettingsItem>
   <SettingsItem label="最大日志条数">
     <div class="width-150">
       <el-select v-model:model-value="props.config.logsMax">

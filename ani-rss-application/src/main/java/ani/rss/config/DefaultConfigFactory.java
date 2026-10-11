@@ -182,6 +182,9 @@ public class DefaultConfigFactory {
                 .setProcrastinating(false)
                 .setProcrastinatingDay(14)
                 .setGithubToken("")
+                // 更新检测的来源仓库, 默认指向本 fork 而非上游
+                .setUpdateOwner("XxToradoxX")
+                .setUpdateRepo("ani-rss")
                 .setUpdateTotalEpisodeNumber(false)
                 .setForceUpdateTotalEpisodeNumber(false)
                 .setOpenListDownloadTimeout(60)

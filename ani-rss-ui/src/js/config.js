@@ -101,6 +101,8 @@ export let configData = {
     "procrastinating": false,
     "procrastinatingDay": 14,
     "githubToken": "",
+    "updateOwner": "XxToradoxX",
+    "updateRepo": "ani-rss",
     "updateTotalEpisodeNumber": false,
     "forceUpdateTotalEpisodeNumber": false,
     "openListDownloadTimeout": 60,

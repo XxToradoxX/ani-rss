@@ -59,7 +59,8 @@ public class GithubService {
                 .setSha256("")
                 .setMarkdownBody("")
                 .setSize(0L)
-                .setFormatSize("0 MiB");
+                .setFormatSize("0 MiB")
+                .setRepositoryUrl(StrUtil.format("https://github.com/{}/{}", owner, repo));
 
         Optional<Github.Release> releaseOpt = getLatest(owner, repo);
         if (releaseOpt.isEmpty()) {

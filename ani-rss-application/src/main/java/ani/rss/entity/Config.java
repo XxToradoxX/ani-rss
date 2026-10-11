@@ -599,6 +599,20 @@ public class Config implements Serializable {
     private String githubToken;
 
     /**
+     * 更新仓库 owner
+     * <p>
+     * 检测更新时拉取该 owner 下的 releases, 默认指向本 fork
+     */
+    @Schema(description = "更新仓库 owner")
+    private String updateOwner;
+
+    /**
+     * 更新仓库名
+     */
+    @Schema(description = "更新仓库名")
+    private String updateRepo;
+
+    /**
      * 自动更新总集数信息
      */
     @Schema(description = "自动更新总集数信息")

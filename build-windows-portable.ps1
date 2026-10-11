@@ -116,10 +116,17 @@ Copy-Item $jar (Join-Path $distDir 'ani-rss.jar') -Force
 Copy-Item $jreDir (Join-Path $distDir 'jre') -Recurse -Force
 
 $size = (Get-ChildItem $distDir -Recurse -File | Measure-Object -Property Length -Sum).Sum
+
+# 读取版本号, 便于手动打 tag / CI 使用
+$pomVersion = ([xml](Get-Content (Join-Path $root 'pom.xml'))).project.version
+
 Write-Host ''
 Write-Host '构建完成' -ForegroundColor Cyan
 Write-Host "  目录: $distDir"
+Write-Host "  版本: $pomVersion"
 Write-Host "  体积: $([math]::Round($size / 1MB, 1)) MB"
 Write-Host ''
 Write-Host '分发时把整个 ani-rss-win 文件夹拷给对方, 双击 ani-rss.exe 即可, 无需安装 Java。'
 Write-Host '配置与日志会生成在 %USERPROFILE%\ani-rss\ (托盘右键 -> Config 可直接打开)。'
+Write-Host ''
+Write-Host "发布到本仓库 Release: git tag v$pomVersion; git push origin v$pomVersion"

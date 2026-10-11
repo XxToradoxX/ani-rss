@@ -42,4 +42,12 @@ public class UpdateInfo implements Serializable {
      */
     @Schema(description = "发布时间")
     private Date date;
+
+    /**
+     * 更新来源仓库地址
+     * <p>
+     * 用于前端展示 release 链接, 指向配置的更新仓库而非写死的上游
+     */
+    @Schema(description = "更新来源仓库")
+    private String repositoryUrl;
 }
