@@ -15,6 +15,7 @@ import ani.rss.util.other.NotificationUtil;
 import ani.rss.util.other.TmdbUtils;
 import cn.hutool.core.util.ReflectUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import wushuo.tmdb.api.entity.Tmdb;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 public class NotificationController extends BaseController {
 
@@ -34,20 +36,30 @@ public class NotificationController extends BaseController {
         Class<? extends BaseNotification> aClass = NotificationUtil.NOTIFICATION_MAP.get(notificationType);
         BaseNotification baseNotification = ReflectUtil.newInstance(aClass);
         Ani ani = AniUtil.createAni();
-        BgmInfo bgmInfo = BgmUtil.getBgmInfo("292970", true);
-        BgmUtil.toAni(bgmInfo, ani);
 
-        String image = ani.getImage();
+        // 以下均为外部数据, 失败时必须继续发送, 否则 tmdb/bgm 不可用(如网络受限)时无法测试通知
         String title = ani.getTitle();
+        try {
+            BgmInfo bgmInfo = BgmUtil.getBgmInfo("292970", true);
+            BgmUtil.toAni(bgmInfo, ani);
 
-        ani.setCover(AniUtil.saveCover(image))
-                .setCurrentEpisodeNumber(6)
-                .setTotalEpisodeNumber(12)
-                .setSubgroup("未知字幕组");
+            String image = ani.getImage();
+            title = ani.getTitle();
 
-        Optional<Tmdb> tmdb = TmdbUtils.getTmdbTv(title);
+            ani.setCover(AniUtil.saveCover(image))
+                    .setCurrentEpisodeNumber(6)
+                    .setTotalEpisodeNumber(12)
+                    .setSubgroup("未知字幕组");
+        } catch (Exception e) {
+            log.warn("测试通知获取 bgm 信息失败, 将跳过: {}", e.getMessage());
+        }
 
-        tmdb.ifPresent(ani::setTmdb);
+        try {
+            Optional<Tmdb> tmdb = TmdbUtils.getTmdbTv(title);
+            tmdb.ifPresent(ani::setTmdb);
+        } catch (Exception e) {
+            log.warn("测试通知获取 tmdb 信息失败, 将跳过: {}", e.getMessage());
+        }
 
         try {
             baseNotification.test(notificationConfig, ani, "test", NotificationStatusEnum.DOWNLOAD_START);

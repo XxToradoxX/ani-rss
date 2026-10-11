@@ -157,9 +157,10 @@ public class WxPusherNotification implements BaseNotification {
         Assert.isTrue(StrUtil.isNotBlank(appToken), "请设置 WxPusher appToken");
         Assert.isTrue(!uids.isEmpty() || !topicIds.isEmpty(), "请设置 WxPusher UID 或 主题 ID");
 
+        // 空数组没有意义, 置为 null 让 gson 直接省略该字段
         return body.setAppToken(appToken.trim())
-                .setUids(uids)
-                .setTopicIds(topicIds);
+                .setUids(uids.isEmpty() ? null : uids)
+                .setTopicIds(topicIds.isEmpty() ? null : topicIds);
     }
 
     /**
