@@ -16,6 +16,10 @@ export let notificationTypeList = [
         label: "Bark通知"
     },
     {
+        name: 'WX_PUSHER',
+        label: 'WxPusher微信推送'
+    },
+    {
         name: 'SYSTEM',
         label: '系统通知'
     },

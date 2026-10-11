@@ -27,6 +27,7 @@
       <MailNotificationView v-model:notification-config="notificationConfig" v-model:config="props.config"/>
       <ServerChanNotificationView v-model:notification-config="notificationConfig" v-model:config="props.config"/>
       <BarkNotificationView v-model:config="props.config" v-model:notification-config="notificationConfig"/>
+      <WxPusherNotificationView v-model:config="props.config" v-model:notification-config="notificationConfig"/>
       <TelegramNotificationView v-model:notification-config="notificationConfig" v-model:config="props.config"/>
       <WebhookNotificationView v-model:notification-config="notificationConfig" v-model:config="props.config"/>
       <SystemNotificationView v-model:notification-config="notificationConfig" v-model:config="props.config"/>
@@ -78,6 +79,7 @@ import FileMoveNotificationView from "./notification/FileMoveNotificationView.vu
 import OpenListUploadNotificationView from "./notification/OpenListUploadNotificationView.vue";
 import {testNotification} from "@/js/http.js";
 import BarkNotificationView from "./notification/BarkNotificationView.vue";
+import WxPusherNotificationView from "./notification/WxPusherNotificationView.vue";
 
 
 let notificationConfig = ref({
@@ -109,6 +111,14 @@ let notificationConfig = ref({
   "embyApiKey": "",
   "embyRefreshViewIds": [],
   "embyDelayed": 0,
+  "wxPusherApiHost": "https://wxpusher.zjiecode.com",
+  "wxPusherType": "APP_TOKEN",
+  "wxPusherAppToken": "",
+  "wxPusherUids": [],
+  "wxPusherTopicIds": [],
+  "wxPusherSpts": [],
+  "wxPusherUseMarkdown": false,
+  "wxPusherSummary": true,
   "statusList": [
     "DOWNLOAD_START",
     "OMIT",

@@ -28,17 +28,19 @@ public class NotificationUtil {
 
     public final static Map<NotificationTypeEnum, Class<? extends BaseNotification>>
             NOTIFICATION_MAP =
-            Map.of(
-                    NotificationTypeEnum.EMBY_REFRESH, EmbyRefreshNotification.class,
-                    NotificationTypeEnum.MAIL, MailNotification.class,
-                    NotificationTypeEnum.SERVER_CHAN, ServerChanNotification.class,
-                    NotificationTypeEnum.SYSTEM, SystemNotification.class,
-                    NotificationTypeEnum.TELEGRAM, TelegramNotification.class,
-                    NotificationTypeEnum.WEB_HOOK, WebHookNotification.class,
-                    NotificationTypeEnum.SHELL, ShellNotification.class,
-                    NotificationTypeEnum.FILE_MOVE, FileMoveNotification.class,
-                    NotificationTypeEnum.OPEN_LIST_UPLOAD, OpenListUploadNotification.class,
-                    NotificationTypeEnum.BARK, BarkNotification.class
+            // 通知类型已超过 10 个, Map.of 最多只支持 10 对 K/V, 因此必须使用 Map.ofEntries
+            Map.ofEntries(
+                    Map.entry(NotificationTypeEnum.EMBY_REFRESH, EmbyRefreshNotification.class),
+                    Map.entry(NotificationTypeEnum.MAIL, MailNotification.class),
+                    Map.entry(NotificationTypeEnum.SERVER_CHAN, ServerChanNotification.class),
+                    Map.entry(NotificationTypeEnum.SYSTEM, SystemNotification.class),
+                    Map.entry(NotificationTypeEnum.TELEGRAM, TelegramNotification.class),
+                    Map.entry(NotificationTypeEnum.WEB_HOOK, WebHookNotification.class),
+                    Map.entry(NotificationTypeEnum.SHELL, ShellNotification.class),
+                    Map.entry(NotificationTypeEnum.FILE_MOVE, FileMoveNotification.class),
+                    Map.entry(NotificationTypeEnum.OPEN_LIST_UPLOAD, OpenListUploadNotification.class),
+                    Map.entry(NotificationTypeEnum.BARK, BarkNotification.class),
+                    Map.entry(NotificationTypeEnum.WX_PUSHER, WxPusherNotification.class)
             );
 
     /**

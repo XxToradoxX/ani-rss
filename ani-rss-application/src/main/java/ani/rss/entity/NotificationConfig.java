@@ -3,6 +3,7 @@ package ani.rss.entity;
 import ani.rss.enums.NotificationStatusEnum;
 import ani.rss.enums.NotificationTypeEnum;
 import ani.rss.enums.ServerChanTypeEnum;
+import ani.rss.enums.WxPusherTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -284,6 +285,54 @@ public class NotificationConfig implements Serializable {
     private Integer barkVolume;
 
     /**
+     * WxPusher Api 地址
+     */
+    @Schema(description = "WxPusher Api 地址")
+    private String wxPusherApiHost;
+
+    /**
+     * WxPusher 推送方式：标准推送 或 极简推送
+     */
+    @Schema(description = "WxPusher 推送方式")
+    private WxPusherTypeEnum wxPusherType;
+
+    /**
+     * WxPusher 应用 appToken
+     */
+    @Schema(description = "WxPusher appToken")
+    private String wxPusherAppToken;
+
+    /**
+     * WxPusher 接收用户 UID
+     */
+    @Schema(description = "WxPusher UID")
+    private List<String> wxPusherUids;
+
+    /**
+     * WxPusher 主题 ID
+     */
+    @Schema(description = "WxPusher 主题 ID")
+    private List<String> wxPusherTopicIds;
+
+    /**
+     * WxPusher 极简推送 spt
+     */
+    @Schema(description = "WxPusher spt")
+    private List<String> wxPusherSpts;
+
+    /**
+     * WxPusher 是否使用 markdown
+     */
+    @Schema(description = "WxPusher 使用 markdown")
+    private Boolean wxPusherUseMarkdown;
+
+    /**
+     * WxPusher 是否使用 标题+事件 作为消息摘要
+     */
+    @Schema(description = "WxPusher 消息摘要")
+    private Boolean wxPusherSummary;
+
+    /**
      * 通知 状态
      */
     @Schema(description = "通知状态")
@@ -380,6 +429,17 @@ public class NotificationConfig implements Serializable {
                 .setBarkUseMarkdown(false)
                 .setBarkLevel("active")
                 .setBarkVolume(5);
+
+        // WxPusher
+        notificationConfig
+                .setWxPusherApiHost("https://wxpusher.zjiecode.com")
+                .setWxPusherType(WxPusherTypeEnum.APP_TOKEN)
+                .setWxPusherAppToken("")
+                .setWxPusherUids(new ArrayList<>())
+                .setWxPusherTopicIds(new ArrayList<>())
+                .setWxPusherSpts(new ArrayList<>())
+                .setWxPusherUseMarkdown(false)
+                .setWxPusherSummary(true);
 
         return notificationConfig;
     }
