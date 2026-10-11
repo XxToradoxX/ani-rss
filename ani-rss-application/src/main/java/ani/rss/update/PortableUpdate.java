@@ -3,15 +3,14 @@ package ani.rss.update;
 import ani.rss.commons.ExceptionUtils;
 import ani.rss.commons.MavenUtils;
 import ani.rss.entity.About;
-import ani.rss.util.basic.HttpReq;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RuntimeUtil;
-import cn.hutool.crypto.SecureUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BiConsumer;
 
 /**
  * 便携版(自带 jre)更新
@@ -241,20 +240,11 @@ public class PortableUpdate implements BaseUpdate {
      * 便携版需要下载 zip 包
      */
     @Override
-    public File downloadUpdateFile(About about) {
+    public File downloadUpdateFile(About about, BiConsumer<Long, Long> progress) {
         File file = new File(FileUtil.getTmpDir(), "ani-rss-portable.zip");
 
-        String downloadUrl = about.getDownloadUrl();
-        String sha256 = about.getSha256();
-        long size = about.getSize();
-
-        HttpReq.get(downloadUrl)
-                .then(res -> {
-                    HttpReq.assertStatus(res);
-                    FileUtil.writeFromStream(res.bodyStream(), file, true);
-                    Assert.isTrue(file.length() == size, "下载出现问题");
-                    Assert.isTrue(SecureUtil.sha256(file).equals(sha256), "更新文件的 sha256 不匹配");
-                });
+        // 复用分块下载 + sha256 校验, 以便上报进度
+        download(about, file, progress);
 
         return file;
     }

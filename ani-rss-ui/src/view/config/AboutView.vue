@@ -65,6 +65,22 @@
         <SettingsItem label="大小">
           {{ about['formatSize'] }}
         </SettingsItem>
+        <SettingsItem v-if="progressVisible" label="更新进度">
+          <div class="full-width">
+            <el-progress
+                :percentage="progress.percent"
+                :status="progress.phase === 'failed' ? 'exception' : (progress.phase === 'verifying' ? 'success' : '')"
+                :stroke-width="14"
+                striped
+                :striped-flow="progress.phase === 'downloading'"
+            />
+            <div class="margin-top-4">
+              <el-text size="small" :type="progress.phase === 'failed' ? 'danger' : 'info'">
+                {{ progressText }}
+              </el-text>
+            </div>
+          </div>
+        </SettingsItem>
         <SettingsItem label="更新内容">
           <el-scrollbar class="about-scrollbar" :always="true">
             <div class="markdown-body about-markdown" v-html="md.render(about.markdownBody)"></div>
@@ -101,7 +117,7 @@
 
 <script setup>
 import SettingsItem from "@/view/custom/SettingsItem.vue";
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {ElMessage, ElText} from "element-plus";
 import PopconfirmView from "@/view/custom/PopconfirmView.vue";
 import {Book, Github, Telegram} from "@vicons/fa";
@@ -145,32 +161,109 @@ const stop = (status) => {
       })
 }
 
-const update = async () => {
+// 更新进度: 后端在后台线程下载并替换, 这里轮询 /api/updateProgress 渲染进度条
+let progress = ref({
+  phase: 'idle',
+  message: '',
+  current: 0,
+  total: 0,
+  percent: 0,
+  error: ''
+})
+let progressVisible = ref(false)
+
+let progressText = computed(() => {
+  let {phase, message, percent, current, total, error} = progress.value
+  if (phase === 'failed') {
+    return `更新失败: ${error || '未知错误'}`
+  }
+  if (phase === 'verifying' || phase === 'replacing') {
+    return message || '正在替换文件, 即将重启'
+  }
+  if (phase === 'downloading') {
+    let c = formatSize(current)
+    if (total > 0) {
+      return `${message}  ${c} / ${formatSize(total)}  (${percent}%)`
+    }
+    return `${message}  ${c}`
+  }
+  return message || ''
+})
+
+let formatSize = (bytes) => {
+  if (!bytes || bytes <= 0) return '0 B'
+  let units = ['B', 'KB', 'MB', 'GB']
+  let i = Math.floor(Math.log(bytes) / Math.log(1024))
+  i = Math.min(i, units.length - 1)
+  return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i]
+}
+
+let update = async () => {
   let sleep = ms => {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
+  progressVisible.value = true
+  progress.value.phase = 'starting'
   actionLoading.value = true
-  http.update()
-      .then(async res => {
-        ElMessage.success(res.message)
-        for (let i = 0; i < 24; i++) {
-          await sleep(5000)
-          try {
-            let pingRes = await http.ping()
-            if (pingRes.code === 200) {
-              authorization.value = ''
-              location.reload()
-              return
-            }
-          } catch (e) {
-          }
-        }
-        ElMessage.error("重启时遇到错误")
-      })
-      .finally(() => {
-        actionLoading.value = false
-      })
+
+  // 立即返回, 实际下载在后台进行
+  let updateRes
+  try {
+    updateRes = await http.update(about.value)
+  } catch (e) {
+    // api.js 已经弹过错误提示
+    progress.value.phase = 'failed'
+    progress.value.error = e.message
+    actionLoading.value = false
+    return
+  }
+  ElMessage.success(updateRes.message)
+
+  // 阶段一: 跟随下载进度; 若服务端其实没在更新则立刻进入重启等待
+  for (let i = 0; i < 180; i++) {
+    await sleep(1000)
+    let res = null
+    try {
+      res = await http.updateProgress()
+    } catch (e) {
+      // 服务端正在重启, 交给下面阶段二
+      break
+    }
+    let d = res.data || {}
+    progress.value = {
+      phase: d.phase || 'idle',
+      message: d.message || '',
+      current: d.current || 0,
+      total: d.total || 0,
+      percent: d.percent || 0,
+      error: d.error || ''
+    }
+    if (d.phase === 'failed') {
+      actionLoading.value = false
+      return
+    }
+    // 已进入替换阶段, 或服务端已空闲(非下载中), 说明下载结束
+    if (d.phase === 'verifying' || d.phase === 'replacing' || d.phase === 'idle') {
+      break
+    }
+  }
+
+  // 阶段二: 等待程序重启完成
+  for (let i = 0; i < 60; i++) {
+    await sleep(5000)
+    try {
+      let pingRes = await http.ping()
+      if (pingRes.code === 200) {
+        authorization.value = ''
+        location.reload()
+        return
+      }
+    } catch (e) {
+    }
+  }
+  ElMessage.error("重启时遇到错误")
+  actionLoading.value = false
 }
 
 const about = ref({

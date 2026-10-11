@@ -52,9 +52,16 @@ export let about = () => api.post('api/about')
 
 /**
  * 更新
+ * @param about 关于信息(含 downloadUrl / size / sha256)
  * @returns {Promise<unknown>}
  */
-export let update = () => api.post('api/update')
+export let update = (about) => api.post('api/update', about)
+
+/**
+ * 更新进度
+ * @returns {Promise<unknown>}
+ */
+export let updateProgress = () => api.post('api/updateProgress')
 
 /**
  * 获取Mikan番剧列表

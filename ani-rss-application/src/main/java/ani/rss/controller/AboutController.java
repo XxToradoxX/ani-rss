@@ -6,6 +6,7 @@ import ani.rss.commons.ExceptionUtils;
 import ani.rss.commons.MavenUtils;
 import ani.rss.entity.About;
 import ani.rss.entity.Global;
+import ani.rss.entity.UpdateProgress;
 import ani.rss.entity.web.Result;
 import ani.rss.service.UpdateService;
 import cn.hutool.core.thread.ThreadUtil;
@@ -14,6 +15,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,16 +58,30 @@ public class AboutController extends BaseController {
     @Auth
     @Operation(summary = "更新")
     @PostMapping("/update")
-    public Result<Void> update() {
-        About about = updateService.about();
+    public Result<Void> update(@RequestBody About about) {
         try {
             updateService.update(about);
-            return Result.success("更新成功, 正在重启...");
+            return Result.success("已开始更新, 请勿关闭程序");
         } catch (Exception e) {
             String message = ExceptionUtils.getMessage(e);
             log.info("更新失败 {}, {}", about.getLatest(), message);
-            return Result.success("更新失败 {}, {}", about.getLatest(), message);
+            return Result.error(message);
         }
+    }
+
+    @Auth
+    @Operation(summary = "更新进度")
+    @PostMapping("/updateProgress")
+    public Result<UpdateProgress> updateProgress() {
+        return Result.success(updateService.getProgress());
+    }
+
+    @Auth
+    @Operation(summary = "清除更新进度")
+    @PostMapping("/clearUpdateProgress")
+    public Result<Void> clearUpdateProgress() {
+        updateService.clearProgress();
+        return Result.success();
     }
 
     private final IpWhitelist ipWhitelist = new IpWhitelist();
